@@ -13,7 +13,7 @@ app = FastAPI(title="DevOps Assignment API")
 # Add CORS middleware so frontend can call backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # You can restrict this to your frontend domain later
+    allow_origins=["https://frontend-ui.vercel.app"],  # You can restrict this to your frontend domain later
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
