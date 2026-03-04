@@ -1,0 +1,48 @@
+name: Deploy FastAPI to EC2 (Secure)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Docker Image
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/backend_api:latest .
+
+      - name: Push Docker Image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/backend_api:latest
+
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            docker pull ${{ secrets.DOCKER_USERNAME }}/backend_api:latest
+
+            docker stop backend_api || true
+            docker rm backend_api || true
+
+            docker run -d \
+              --name backend_api \
+              --restart always \
+              --read-only \
+              --cap-drop ALL \
+              --security-opt no-new-privileges \
+              -p 8000:8000 \
+              -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+              ${{ secrets.DOCKER_USERNAME }}/backend_api:latest
