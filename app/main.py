@@ -1,13 +1,13 @@
-from fastapi import FastAPI, Depends, HTTPException
-from sqlalchemy.orm import Session
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI
+from .database import Base, engine
+from .routes import router
 
-from . import models, schemas, database
+Base.metadata.create_all(bind=engine)
 
-# Create database tables
-models.Base.metadata.create_all(bind=database.engine)
+app = FastAPI(title="Auth API", description="Signup with OTP, login, and profile endpoints.")
 
-app = FastAPI()
+app.include_router(router)
+
 
 # Enable CORS
 app.add_middleware(
@@ -44,3 +44,4 @@ def health_check():
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = models.User(name=user.name, email=user.email)
     db.add(db_user)
+

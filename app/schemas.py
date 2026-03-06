@@ -1,11 +1,18 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
-class UserCreate(BaseModel):
-    name: str
-    email: str
+class UserSignup(BaseModel):
+    email: EmailStr
+    password: str
 
-class UserResponse(UserCreate):
-    id: int
+class UserVerify(BaseModel):
+    email: EmailStr
+    otp: str
 
-    class Config:
-        orm_mode = True
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class UserProfile(BaseModel):
+    email: EmailStr
+    verified: bool
+
