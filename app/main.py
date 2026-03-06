@@ -15,7 +15,7 @@ app = FastAPI(
 # Include routes
 app.include_router(router)
 
-# Enable CORS (for local dev + Vercel frontend)
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
