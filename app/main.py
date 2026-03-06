@@ -1,15 +1,21 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from .database import Base, engine
 from .routes import router
 
+# Create database tables
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Auth API", description="Signup with OTP, login, and profile endpoints.")
+# Initialize FastAPI app
+app = FastAPI(
+    title="Auth API",
+    description="Signup with OTP, login, and profile endpoints. Provides JWT authentication."
+)
 
+# Include routes
 app.include_router(router)
 
-
-# Enable CORS
+# Enable CORS (for local dev + Vercel frontend)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -21,14 +27,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Dependency to get DB session
-def get_db():
-    db = database.SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 # Root route
 @app.get("/")
 def root():
@@ -38,10 +36,4 @@ def root():
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
-
-# Create a new user
-@app.post("/users/", response_model=schemas.UserResponse)
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user = models.User(name=user.name, email=user.email)
-    db.add(db_user)
 
